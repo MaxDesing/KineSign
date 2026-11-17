@@ -1,0 +1,1913 @@
+﻿<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KineSign ESPOCH | Detección y Reconocimiento de Lengua de Señas Ecuatoriana</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#090d16',
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos personalizados complementarios */
+        html, body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .hero-glow {
+            background: radial-gradient(circle at 20% 20%, rgba(245, 158, 11, 0.18), transparent 45%),
+                        radial-gradient(circle at 80% 75%, rgba(59, 130, 246, 0.16), transparent 45%),
+                        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.08), transparent 60%);
+        }
+        .stage-card {
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+        }
+        .stage-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 35px -12px rgba(15, 23, 42, 0.14);
+        }
+        .text-gradient-gold {
+            background: linear-gradient(135deg, #fde68a 0%, #fbbf24 45%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, rgba(245, 158, 11, 0), rgba(245, 158, 11, 0.15) 50%, rgba(245, 158, 11, 0));
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(200%); }
+        }
+        /* Scrollbar estilizado para selector de abecedario en móviles */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #f59e0b;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-gold-500 selection:text-navy-900 overflow-x-hidden">
+
+    <!-- ===================================================================== -->
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR (NAVBAR)                                  -->
+    <!-- ===================================================================== -->
+    <header class="sticky top-0 z-50 bg-navy-950/95 backdrop-blur-md border-b border-slate-800/80 text-white transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <!-- Logo Institucional -->
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-navy-950 font-extrabold shadow-lg shadow-gold-500/20 group-hover:scale-105 transition-transform">
+                        <i data-lucide="hand" class="w-6 h-6 stroke-[2.5]"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-extrabold text-lg tracking-tight leading-none text-white">
+                            KineSign <span class="text-gold-400">ESPOCH</span>
+                        </span>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mt-0.5">
+                            LSE • Visión & Voz IA
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Enlaces de Navegación Desktop -->
+                <nav class="hidden xl:flex items-center gap-1 text-xs font-medium text-slate-300">
+                    <a href="#problema-objetivos" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">1. Problema y Propuesta</a>
+                    <a href="#planteamiento" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">2. Planteamiento</a>
+                    <a href="#innovacion" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">3. Innovación</a>
+                    <a href="#impacto-ods" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">4. Sostenibilidad</a>
+                    <a href="#viabilidad" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">5. Viabilidad</a>
+                    <a href="#guia-abecedario" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">6. Guía LSE</a>
+                    <a href="#herramientas" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">7. Herramientas</a>
+                    <a href="#equipo" class="px-2 py-2 rounded-lg hover:text-gold-400 hover:bg-white/5 transition-colors">8. Autores</a>
+                </nav>
+
+                <!-- Botón CTA y Menú Móvil -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <a href="#guia-abecedario" class="hidden sm:inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-gold-500/20 transition-all active:scale-95">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span>Probar Guía LSE</span>
+                    </a>
+                    <button id="mobile-menu-btn" aria-label="Abrir menú" class="xl:hidden p-2.5 rounded-xl bg-slate-800/80 text-slate-200 hover:text-gold-400 hover:bg-slate-800 transition-colors">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú Desplegable Móvil / Tablet -->
+        <div id="mobile-menu" class="hidden xl:hidden bg-navy-900 border-b border-slate-800 px-4 pt-2 pb-5 space-y-1">
+            <a href="#problema-objetivos" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">1. Problema y Propuesta de Valor</a>
+            <a href="#planteamiento" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">2. Planteamiento del Problema</a>
+            <a href="#innovacion" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">3. Innovación y Valor Diferenciador</a>
+            <a href="#impacto-ods" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">4. Sostenibilidad e Impacto Amazónico</a>
+            <a href="#viabilidad" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">5. Viabilidad Técnica y Económica</a>
+            <a href="#guia-abecedario" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">6. Guía de Abecedario en Lengua de Señas</a>
+            <a href="#herramientas" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">7. Herramientas de Desarrollo</a>
+            <a href="#equipo" class="mobile-link block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-gold-400">8. Autores del Proyecto • ESPOCH</a>
+        </div>
+    </header>
+
+    <!-- ===================================================================== -->
+    <!-- HERO SECTION (ENCABEZADO PRINCIPAL)                                   -->
+    <!-- ===================================================================== -->
+    <section class="relative bg-navy-950 text-white pt-14 pb-20 lg:py-28 overflow-hidden border-b border-slate-800 hero-glow">
+        <!-- Decoración de fondo sutil -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-[28rem] h-[28rem] bg-gold-500/15 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div class="absolute bottom-0 right-0 w-[34rem] h-[34rem] bg-blue-500/15 rounded-full blur-3xl"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-30"></div>
+        </div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Columna Izquierda: Título, Subtítulo, Botones y Métricas -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gold-500/15 border border-gold-400/40 text-gold-300 text-xs font-extrabold tracking-wider uppercase shadow-lg shadow-gold-500/10">
+                        <span class="w-2.5 h-2.5 rounded-full bg-gold-400 animate-ping"></span>
+                        <span>Educación Inclusiva Infantil • KineSign ESPOCH</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight leading-[1.12] text-white">
+                        Detección y Reconocimiento Inteligente de 
+                        <span class="text-gradient-gold block sm:inline">Lengua de Señas Ecuatoriana (LSE)</span>
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
+                        Plataforma educativa de bajo costo diseñada para que <strong class="text-white">niños y niñas en edad escolar aprendan LSE de forma lúdica</strong> e incluyan naturalmente a compañeros con discapacidad auditiva, convirtiendo gestos en voz y texto en tiempo real sin hardware costoso.
+                    </p>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex flex-wrap items-center gap-4 pt-2">
+                        <a href="#guia-abecedario" class="inline-flex items-center gap-2.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold px-6 py-3.5 rounded-xl shadow-lg shadow-gold-500/25 transition-all hover:-translate-y-0.5">
+                            <i data-lucide="book-open" class="w-5 h-5"></i>
+                            <span>Explorar Abecedario LSE</span>
+                        </a>
+                        <a href="#problema-objetivos" class="inline-flex items-center gap-2.5 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-700 font-semibold px-6 py-3.5 rounded-xl transition-all">
+                            <i data-lucide="layers" class="w-5 h-5 text-gold-400"></i>
+                            <span>Ver Metodología</span>
+                        </a>
+                    </div>
+
+                    <!-- Métricas Clave -->
+                    <div class="grid grid-cols-3 gap-4 sm:gap-8 pt-6 border-t border-slate-800/90 max-w-xl">
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-white">26</div>
+                            <div class="text-xs sm:text-sm text-slate-400 mt-0.5">Señas del Abecedario LSE</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-gold-400">&lt; 40ms</div>
+                            <div class="text-xs sm:text-sm text-slate-400 mt-0.5">Latencia de Detección</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400">100%</div>
+                            <div class="text-xs sm:text-sm text-slate-400 mt-0.5">Tiempo Real & Voz</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Simulador Interactivo de Visor IA -->
+                <div class="lg:col-span-5">
+                    <div class="bg-navy-950 rounded-2xl border border-slate-700/80 shadow-2xl overflow-hidden">
+                        <!-- Barra Superior del Visor -->
+                        <div class="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="text-xs font-bold tracking-wider uppercase text-slate-200">EN VIVO • DETECCIÓN LSE</span>
+                            </div>
+                            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-gold-400 border border-slate-700">21 Landmarks</span>
+                        </div>
+
+                        <!-- Área Visual Simulada con Robot/Mano Skeleton -->
+                        <div class="relative h-64 sm:h-72 bg-gradient-to-b from-slate-900 via-navy-950 to-slate-900 flex flex-col items-center justify-center p-6 overflow-hidden">
+                            <!-- Efecto Escáner -->
+                            <div class="absolute inset-0 scanline pointer-events-none"></div>
+
+                            <!-- Avatar Robot / Esquema de Mano con Landmarks -->
+                            <div class="relative z-10 animate-float flex flex-col items-center">
+                                <svg class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_0_20px_rgba(245,158,11,0.25)]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Halo tecnológico -->
+                                    <circle cx="100" cy="100" r="82" stroke="#334155" stroke-width="1.5" stroke-dasharray="6 6"/>
+                                    <circle cx="100" cy="100" r="66" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.35"/>
+                                    <!-- Cabeza Robot Amigable KineSign -->
+                                    <rect x="62" y="42" width="76" height="58" rx="18" fill="#1e293b" stroke="#f59e0b" stroke-width="2.5"/>
+                                    <!-- Antena -->
+                                    <line x1="100" y1="42" x2="100" y2="26" stroke="#f59e0b" stroke-width="2.5"/>
+                                    <circle cx="100" cy="22" r="5" fill="#fbbf24"/>
+                                    <!-- Visor facial -->
+                                    <rect x="72" y="54" width="56" height="32" rx="10" fill="#090d16"/>
+                                    <!-- Ojos expresivos -->
+                                    <circle cx="88" cy="70" r="5" fill="#38bdf8"/>
+                                    <circle cx="112" cy="70" r="5" fill="#38bdf8"/>
+                                    <path d="M94 78 Q100 83 106 78" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                                    <!-- Mano con puntos clave (MediaPipe Landmarks) -->
+                                    <g transform="translate(65, 108)">
+                                        <path d="M22 65 L22 36 L14 14 M22 36 L26 8 M22 36 L38 10 M22 36 L48 18 M22 48 L8 34" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                                        <rect x="16" y="34" width="24" height="30" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+                                        <!-- Puntos Landmarks -->
+                                        <circle cx="14" cy="14" r="3" fill="#fbbf24"/>
+                                        <circle cx="26" cy="8" r="3" fill="#fbbf24"/>
+                                        <circle cx="38" cy="10" r="3" fill="#fbbf24"/>
+                                        <circle cx="48" cy="18" r="3" fill="#fbbf24"/>
+                                        <circle cx="8" cy="34" r="3" fill="#fbbf24"/>
+                                        <circle cx="28" cy="48" r="3.5" fill="#10b981"/>
+                                    </g>
+                                </svg>
+                            </div>
+
+                            <!-- Caja de Traducción Detectada -->
+                            <div class="relative z-10 w-full mt-2 bg-slate-900/95 border border-slate-700/90 rounded-xl p-3 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Traducción en Tiempo Real</span>
+                                    <span id="hero-detected-word" class="text-base sm:text-lg font-extrabold text-white tracking-wide">“HOLA • ESPOCH”</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Confianza</span>
+                                    <span id="hero-confidence" class="text-sm font-bold text-emerald-400">98.7%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controles Interactivos del Simulador Hero -->
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800 space-y-3">
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span>Probar detección rápida:</span>
+                                <span class="text-gold-400 font-medium">Audio TTS Activo</span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-2">
+                                <button onclick="simulateHeroDetection('HOLA', '99.1%')" class="py-2 px-2 rounded-lg bg-gold-500 text-navy-950 font-bold text-xs hover:bg-gold-400 transition-colors">Hola</button>
+                                <button onclick="simulateHeroDetection('GRACIAS', '98.4%')" class="py-2 px-2 rounded-lg bg-slate-800 text-slate-200 font-semibold text-xs hover:bg-slate-700 border border-slate-700 transition-colors">Gracias</button>
+                                <button onclick="simulateHeroDetection('ESPOCH', '97.9%')" class="py-2 px-2 rounded-lg bg-slate-800 text-slate-200 font-semibold text-xs hover:bg-slate-700 border border-slate-700 transition-colors">ESPOCH</button>
+                                <button onclick="simulateHeroDetection('INCLUSIÓN', '98.8%')" class="py-2 px-2 rounded-lg bg-slate-800 text-slate-200 font-semibold text-xs hover:bg-slate-700 border border-slate-700 transition-colors">Inclusión</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 1: PROBLEMA Y OBJETIVOS                                       -->
+    <!-- ===================================================================== -->
+    <section id="problema-objetivos" class="py-20 bg-slate-50 border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Encabezado de Sección -->
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    1. Problema y Propuesta de Valor
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    Problema Real, Público Definido y Propuesta de Valor
+                </h2>
+                <p class="text-slate-600 mt-3 text-base">
+                    Delimitación basada en evidencia de la exclusión comunicativa en la infancia ecuatoriana y nuestra respuesta educativa para que los niños aprendan LSE e integren a compañeros con discapacidad auditiva.
+                </p>
+            </div>
+
+            <!-- TARJETA DESTACADA: PROPUESTA DE VALOR INFANTIL -->
+            <div class="mb-14 bg-navy-900 rounded-3xl p-6 sm:p-8 lg:p-10 text-white border border-slate-800 shadow-xl relative overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-400 text-xs font-extrabold uppercase tracking-wider">
+                            <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                            <span>Propuesta de Valor • Enfoque Infantil</span>
+                        </div>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-white leading-snug">
+                            Niños oyentes aprendiendo <span class="text-gold-400">Lengua de Señas Ecuatoriana</span> para incluir desde la escuela
+                        </h3>
+                        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                            Nuestro programa está diseñado específicamente para <strong class="text-white">niños y niñas de educación básica (6 a 12 años)</strong>, sus docentes y familias. Al convertir el aprendizaje de la LSE en un juego interactivo con cámara y voz, los estudiantes oyentes aprenden este lenguaje inclusivo de forma natural y logran comunicarse directamente con compañeros que tienen discapacidad auditiva, eliminando el aislamiento desde temprana edad.
+                        </p>
+                    </div>
+                    <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                        <div class="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-start gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-gold-500/20 text-gold-400 flex items-center justify-center shrink-0">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-gold-400 uppercase tracking-wider">Público Objetivo</div>
+                                <div class="text-sm font-bold text-white mt-0.5">Niños de 6 a 12 años y escuelas</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Estudiantes oyentes, niños sordos y docentes de aulas regulares e inclusivas.</div>
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-start gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Evidencia Nacional (CONADIS / INEC)</div>
+                                <div class="text-sm font-bold text-white mt-0.5">+66,000 personas con discapacidad auditiva</div>
+                                <div class="text-xs text-slate-400 mt-0.5">Más del 92% de la población oyente desconoce la LSE y faltan intérpretes en escuelas.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBSECCIÓN A: 3 PROBLEMAS DETECTADOS -->
+            <div class="mb-14">
+                <div class="flex items-center gap-2.5 mb-6">
+                    <span class="w-1.5 h-6 rounded-full bg-navy-900"></span>
+                    <h3 class="text-sm sm:text-base font-extrabold uppercase tracking-wider text-navy-900">
+                        A. Problemas Reales Delimitados con Evidencia
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Problema 1 -->
+                    <div class="stage-card stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-5 shadow-sm">
+                                <i data-lucide="message-square-off" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-navy-900 mb-2">Exclusión Escolar Temprana</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                En Ecuador existen más de 66,000 personas con discapacidad auditiva (CONADIS), pero en las escuelas regulares casi ningún niño oyente ni docente domina la LSE, aislando a los estudiantes sordos desde la niñez.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-medium">Evidencia:</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold">&gt;92% sin dominio LSE</span>
+                        </div>
+                    </div>
+
+                    <!-- Problema 2 -->
+                    <div class="stage-card stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-5 shadow-sm">
+                                <i data-lucide="cpu" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-navy-900 mb-2">Barrera Económica en Tecnología</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Los dispositivos traductores comerciales (guantes con sensores o tabletas propietarias) cuestan entre $300 y $1,500+ USD, un monto inaccesible para la mayoría de familias y escuelas públicas en países en vías de desarrollo.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-medium">Brecha:</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold">Hardware importado caro</span>
+                        </div>
+                    </div>
+
+                    <!-- Problema 3 -->
+                    <div class="stage-card stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-5 shadow-sm">
+                                <i data-lucide="book-dashed" class="w-5 h-5"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-navy-900 mb-2">Falta de Didáctica Infantil en LSE</h4>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Casi no existen plataformas web gratuitas adaptadas a la Lengua de Señas Ecuatoriana (muchas usan ASL extranjera) ni diseñadas para que los niños practiquen de forma lúdica con retroalimentación visual y sonora.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-medium">Consecuencia:</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold">88% déficit de apps LSE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA ESTADÍSTICA: MORONA SANTIAGO VS ECUADOR -->
+            <div class="mb-14 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-gold-600 mb-1">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                            <span>Evidencia Estadística Territorial</span>
+                        </span>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-navy-900">
+                            Discapacidad Auditiva: Morona Santiago vs. Ecuador
+                        </h3>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-navy-900 text-gold-400 text-[11px] font-bold self-start sm:self-auto">
+                        Fuente: CONADIS / MSP Ecuador
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm min-w-[620px]">
+                        <thead>
+                            <tr class="border-b-2 border-slate-200 text-slate-500 uppercase text-[11px] tracking-wider">
+                                <th class="py-3 pr-4">Indicador Estadístico</th>
+                                <th class="py-3 px-4 text-navy-900">Morona Santiago (Amazonía)</th>
+                                <th class="py-3 px-4 text-navy-900">Ecuador (Nivel Nacional)</th>
+                                <th class="py-3 pl-4">Lectura e Implicación</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="py-4 pr-4 font-bold text-navy-900">
+                                    Porcentaje de Discapacidad Auditiva
+                                    <span class="block text-[11px] font-normal text-slate-500">Sobre el total de personas con discapacidad</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base font-extrabold text-gold-600">~12.5% – 13%</span>
+                                    </div>
+                                    <div class="w-28 h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                        <div class="h-full bg-gold-500 rounded-full" style="width: 13%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1">~1 de cada 10 casos registrados</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base font-extrabold text-navy-900">12.5% – 13.0%</span>
+                                    </div>
+                                    <div class="w-28 h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                        <div class="h-full bg-navy-900 rounded-full" style="width: 13%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1">3.ª discapacidad de mayor incidencia (+66,000 personas)</span>
+                                </td>
+                                <td class="py-4 pl-4 text-xs text-slate-600">
+                                    Alta presencia de población sorda que requiere integración temprana en aulas regulares.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-4 pr-4 font-bold text-navy-900">
+                                    Tasa de Prevalencia de Discapacidad
+                                    <span class="block text-[11px] font-normal text-slate-500">Porcentaje respecto a la población total</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="text-base font-extrabold text-rose-600">2.91%</span>
+                                    <div class="w-28 h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                        <div class="h-full bg-rose-500 rounded-full" style="width: 29%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1">4,500 – 4,800+ personas registradas</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="text-base font-extrabold text-navy-900">~2.70%</span>
+                                    <div class="w-28 h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                        <div class="h-full bg-slate-700 rounded-full" style="width: 27%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1">Promedio nacional consolidado</span>
+                                </td>
+                                <td class="py-4 pl-4 text-xs text-slate-600">
+                                    Morona Santiago supera el promedio nacional y lidera en prevalencia relativa amazónica.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-4 pr-4 font-bold text-navy-900">
+                                    Población Oyente sin Dominio de LSE
+                                    <span class="block text-[11px] font-normal text-slate-500">Escuelas y entorno comunitario</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="text-base font-extrabold text-amber-600">&gt; 92%</span>
+                                    <div class="w-28 h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                        <div class="h-full bg-amber-500 rounded-full" style="width: 92%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1">Escasez crítica de intérpretes locales</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="text-base font-extrabold text-navy-900">&gt; 92%</span>
+                                    <div class="w-28 h-2 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
+                                        <div class="h-full bg-navy-900 rounded-full" style="width: 92%"></div>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1">Brecha comunicacional generalizada</span>
+                                </td>
+                                <td class="py-4 pl-4 text-xs text-slate-600">
+                                    Enseñar LSE a los niños oyentes con KineSign cierra esta brecha desde la infancia.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SUBSECCIÓN B: 3 OBJETIVOS ESPECÍFICOS -->
+            <div>
+                <div class="flex items-center gap-2.5 mb-6">
+                    <span class="w-1.5 h-6 rounded-full bg-gold-500"></span>
+                    <h3 class="text-sm sm:text-base font-extrabold uppercase tracking-wider text-navy-900">
+                        B. Objetivos Específicos del Proyecto KineSign
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Objetivo 01 -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:border-gold-400 transition-colors relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-3xl font-extrabold text-gold-500 font-display">01</span>
+                            <span class="px-2.5 py-1 rounded-md bg-gold-500/15 text-gold-700 text-[11px] font-bold uppercase tracking-wider">Fase 1 • Captura</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-navy-900 mb-2">Captura y Procesamiento en Tiempo Real</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-5">
+                            Implementar algoritmos de visión artificial para detectar con precisión los 21 puntos clave (landmarks) tridimensionales de la mano mediante cámara web convencional.
+                        </p>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                            <span>Extracción continua a 30+ FPS</span>
+                        </div>
+                    </div>
+
+                    <!-- Objetivo 02 -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:border-gold-400 transition-colors relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-3xl font-extrabold text-gold-500 font-display">02</span>
+                            <span class="px-2.5 py-1 rounded-md bg-gold-500/15 text-gold-700 text-[11px] font-bold uppercase tracking-wider">Fase 2 • Modelo IA</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-navy-900 mb-2">Clasificación y Reconocimiento LSE</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-5">
+                            Entrenar un modelo ligero de aprendizaje automático capaz de clasificar con alta exactitud las señas estáticas y dinámicas del abecedario de la Lengua de Señas Ecuatoriana.
+                        </p>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                            <span>Precisión objetivo superior al 95%</span>
+                        </div>
+                    </div>
+
+                    <!-- Objetivo 03 -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm hover:border-gold-400 transition-colors relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-3xl font-extrabold text-gold-500 font-display">03</span>
+                            <span class="px-2.5 py-1 rounded-md bg-gold-500/15 text-gold-700 text-[11px] font-bold uppercase tracking-wider">Fase 3 • Interfaz</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-navy-900 mb-2">Traducción Lúdica y Síntesis de Voz</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-5">
+                            Desarrollar una interfaz web interactiva e intuitiva que traduzca las señas detectadas a texto en pantalla y audio sintetizado en español de forma instantánea.
+                        </p>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                            <span>Salida multimodal visual y sonora</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 2: PLANTEAMIENTO DEL PROBLEMA                                 -->
+    <!-- ===================================================================== -->
+    <section id="planteamiento" class="py-20 bg-white border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Columna Izquierda: Narrativa y Tarjetas Horizontales -->
+                <div class="lg:col-span-6 space-y-6">
+                    <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase">
+                        Contexto y Justificación
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                        Planteamiento del Problema
+                    </h2>
+                    <p class="text-slate-600 text-base leading-relaxed">
+                        En Ecuador, más de <strong class="text-navy-900 font-bold">66,000 personas presentan discapacidad auditiva</strong> según registros nacionales (CONADIS/INEC). El problema se agrava en la educación básica: la mayoría de escuelas carecen de intérpretes y los niños oyentes no reciben formación en LSE, generando barreras de integración desde la infancia que se arrastran hasta la universidad y la vida laboral.
+                    </p>
+
+                    <div class="space-y-4 pt-2">
+                        <!-- Tarjeta Horizontal 1 -->
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                            <div class="w-10 h-10 rounded-xl bg-gold-500/20 text-gold-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-navy-900">Inclusión desde las Aulas Infantiles</h3>
+                                <p class="text-sm text-slate-600 mt-1 leading-relaxed">
+                                    Implementar el programa con niños permite que aprendan LSE jugando, integrando a compañeros con discapacidad auditiva en el recreo, las clases y la comunidad sin necesidad de intérpretes permanentes.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta Horizontal 2 -->
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                            <div class="w-10 h-10 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center shrink-0 mt-0.5">
+                                <i data-lucide="cpu" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-navy-900">Realidad Económica y Acceso Universal</h3>
+                                <p class="text-sm text-slate-600 mt-1 leading-relaxed">
+                                    En países en desarrollo, la mayoría de familias no puede costear dispositivos electrónicos especializados. Nuestra solución funciona únicamente con la cámara web estándar de cualquier computadora o celular escolar.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Dashboard Oscuro Indicadores del Planteamiento -->
+                <div class="lg:col-span-6">
+                    <div class="bg-navy-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-slate-800 relative overflow-hidden">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-gold-400"></span>
+                                <h3 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-gold-400">
+                                    Indicadores del Planteamiento
+                                </h3>
+                            </div>
+                            <span class="text-xs text-slate-400 font-mono">Diagnóstico LSE • Ecuador</span>
+                        </div>
+
+                        <div class="space-y-6">
+                            <!-- Barra 1 -->
+                            <div>
+                                <div class="flex justify-between text-xs sm:text-sm font-semibold mb-2">
+                                    <span class="text-slate-200">Población oyente sin dominio de LSE</span>
+                                    <span class="text-gold-400 font-bold">&gt; 92%</span>
+                                </div>
+                                <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-gold-600 to-gold-400 rounded-full" style="width: 92%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Barra 2 -->
+                            <div>
+                                <div class="flex justify-between text-xs sm:text-sm font-semibold mb-2">
+                                    <span class="text-slate-200">Déficit de herramientas digitales nativas para LSE</span>
+                                    <span class="text-rose-400 font-bold">88%</span>
+                                </div>
+                                <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full" style="width: 88%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Barra 3 -->
+                            <div>
+                                <div class="flex justify-between text-xs sm:text-sm font-semibold mb-2">
+                                    <span class="text-slate-200">Efectividad de Visión Artificial sin sensores físicos</span>
+                                    <span class="text-emerald-400 font-bold">96.5%</span>
+                                </div>
+                                <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full" style="width: 96.5%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nota de síntesis inferior -->
+                        <div class="mt-8 p-4 rounded-2xl bg-slate-800/70 border border-slate-700/80 flex items-start gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-gold-400 shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                La integración de <strong class="text-white">MediaPipe + Deep Learning</strong> permite democratizar la interpretación dactilológica utilizando únicamente una computadora portátil o dispositivo móvil con cámara.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 3: PREGUNTA DE INVESTIGACIÓN                                  -->
+    <!-- ===================================================================== -->
+    <section id="pregunta" class="py-16 sm:py-20 bg-slate-50 border-b border-slate-200/80">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative bg-navy-900 rounded-3xl p-8 sm:p-12 lg:p-16 text-white shadow-2xl border border-slate-800 overflow-hidden">
+                <!-- Icono decorativo gigante -->
+                <div class="absolute -bottom-8 -right-4 text-slate-800/40 pointer-events-none select-none">
+                    <span class="text-[12rem] font-extrabold leading-none">?</span>
+                </div>
+
+                <div class="relative z-10 max-w-4xl">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-400 text-xs font-extrabold tracking-wider uppercase mb-6">
+                        <i data-lucide="help-circle" class="w-4 h-4"></i>
+                        <span>Pregunta Central de Investigación</span>
+                    </div>
+
+                    <blockquote class="text-2xl sm:text-3xl lg:text-4xl font-extrabold italic leading-snug tracking-tight text-white">
+                        “¿Cómo optimizar la <span class="text-gold-400">precisión y latencia</span> en el reconocimiento de gestos dinámicos y estáticos de la <span class="text-gold-400">Lengua de Señas Ecuatoriana</span> utilizando modelos ligeros de visión por computadora y sintetización de voz?”
+                    </blockquote>
+
+                    <div class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-300">
+                        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 font-semibold text-gold-400">
+                            <i data-lucide="scan-face" class="w-4 h-4"></i>
+                            Enfoque: Visión Artificial & Deep Learning
+                        </span>
+                        <span class="text-slate-500 hidden sm:inline">•</span>
+                        <span class="font-medium text-slate-300">
+                            Alcance: Lengua de Señas Ecuatoriana (LSE) • ESPOCH
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 3: INNOVACIÓN Y VALOR DIFERENCIADOR                           -->
+    <!-- ===================================================================== -->
+    <section id="innovacion" class="py-20 bg-white border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    3. Innovación y Valor Diferenciador
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    ¿Por qué KineSign ESPOCH es Distinto?
+                </h2>
+                <p class="text-slate-600 mt-3 text-base">
+                    Mientras el mercado ofrece dispositivos electrónicos importados de alto costo, nuestra innovación democratiza la IA para las familias y escuelas de Latinoamérica sin estabilidad económica para adquirir hardware especializado.
+                </p>
+            </div>
+
+            <!-- 3 Pilares Diferenciadores -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="stage-card bg-slate-50 rounded-2xl p-6 border border-slate-200/90 shadow-sm">
+                    <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-navy-900 mb-2">Cero Hardware Especializado ($0)</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Los guantes con sensores flexibles o cámaras de profundidad cuestan entre <strong class="text-navy-900">$300 y $1,500+ USD</strong>. KineSign funciona con la cámara web básica de cualquier laptop, PC de laboratorio escolar o teléfono ya existente.
+                    </p>
+                </div>
+
+                <div class="stage-card bg-slate-50 rounded-2xl p-6 border border-slate-200/90 shadow-sm">
+                    <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-navy-900 mb-2">Enfoque Lúdico para Niños en LSE</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        A diferencia de traductores fríos pensados solo para adultos o entrenados en ASL (EE. UU.), nuestra plataforma enseña <strong class="text-navy-900">Lengua de Señas Ecuatoriana</strong> con voz en español y guía interactiva para que los niños aprendan jugando.
+                    </p>
+                </div>
+
+                <div class="stage-card bg-slate-50 rounded-2xl p-6 border border-slate-200/90 shadow-sm">
+                    <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-extrabold text-navy-900 mb-2">IA Ligera Pensada para el 3er Mundo</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Optimizado con MediaPipe y redes neuronales ligeras para ejecutarse localmente en computadoras de gama media-baja y zonas rurales con internet limitado, sin depender de servidores en la nube costosos.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tabla Comparativa Visual -->
+            <div class="bg-navy-900 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl overflow-x-auto">
+                <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-white">Comparativa Frente a Soluciones Existentes</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Mejora clara en accesibilidad económica, pertinencia cultural y facilidad de uso infantil</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 text-xs font-bold border border-gold-500/30">Ventaja Competitiva Real</span>
+                </div>
+                <table class="w-full text-left border-collapse text-xs sm:text-sm min-w-[600px]">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px] tracking-wider">
+                            <th class="py-3 pr-4">Criterio</th>
+                            <th class="py-3 px-4">Dispositivos Comerciales (Guantes / Hardware)</th>
+                            <th class="py-3 pl-4 text-gold-400">KineSign ESPOCH (Nuestra Propuesta)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80">
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-slate-200">Costo de adquisición</td>
+                            <td class="py-3.5 px-4 text-rose-300">$300 – $1,500+ USD (importación y mantenimiento)</td>
+                            <td class="py-3.5 pl-4 text-emerald-400 font-bold">$0 en hardware (usa cámara web común)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-slate-200">Idioma de señas</td>
+                            <td class="py-3.5 px-4 text-slate-400">Mayormente ASL (Inglés) o genérico</td>
+                            <td class="py-3.5 pl-4 text-white font-semibold">100% Lengua de Señas Ecuatoriana (LSE)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-slate-200">Público y uso escolar</td>
+                            <td class="py-3.5 px-4 text-slate-400">Uso técnico individual, incómodo para niños</td>
+                            <td class="py-3.5 pl-4 text-white font-semibold">Didáctico para niños oyentes y sordos en aula</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3.5 pr-4 font-bold text-slate-200">Requisito de conectividad</td>
+                            <td class="py-3.5 px-4 text-slate-400">APIs en la nube o software propietario cerrado</td>
+                            <td class="py-3.5 pl-4 text-white font-semibold">Procesamiento local ligero (ideal zonas rurales)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 4: SOSTENIBILIDAD, IMPACTO AMAZÓNICO Y ODS                    -->
+    <!-- ===================================================================== -->
+    <section id="impacto-ods" class="py-20 bg-white border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    4. Sostenibilidad e Impacto en la Amazonía
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    Sostenibilidad, Impacto Amazónico y ODS
+                </h2>
+                <p class="text-slate-600 mt-3 text-base">
+                    Impacto ambiental, social y económico concreto para la región Amazónica ecuatoriana, reduciendo residuos electrónicos y aprovechando la infraestructura educativa local.
+                </p>
+            </div>
+
+            <!-- BLOQUE DESTACADO: IMPACTO CONCRETO EN LA AMAZONÍA -->
+            <div class="mb-12 bg-gradient-to-br from-emerald-950 via-navy-900 to-navy-950 rounded-3xl p-6 sm:p-8 lg:p-10 text-white border border-emerald-500/30 shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-white/10">
+                    <div>
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-extrabold uppercase tracking-wider mb-2">
+                            <i data-lucide="trees" class="w-4 h-4"></i>
+                            <span>Enfoque Territorial • Amazonía Ecuatoriana</span>
+                        </span>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-white">
+                            Sostenibilidad Ambiental, Social y Económica para la Amazonía
+                        </h3>
+                    </div>
+                    <div class="text-xs text-emerald-200/90 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 rounded-xl shrink-0">
+                        Orellana • Pastaza • Napo • Sucumbíos • Morona • Zamora
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-3">
+                            <i data-lucide="recycle" class="w-5 h-5"></i>
+                        </div>
+                        <h4 class="text-base font-bold text-white mb-1.5">Cero Residuos Electrónicos (E-Waste)</h4>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Evita la fabricación e importación de guantes con sensores, placas electrónicas y baterías de litio desechables que contaminan suelos y ríos amazónicos. Reutiliza computadoras y cámaras ya instaladas en escuelas e Infocentros.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="w-10 h-10 rounded-xl bg-gold-500/20 text-gold-300 flex items-center justify-center mb-3">
+                            <i data-lucide="map-pin" class="w-5 h-5"></i>
+                        </div>
+                        <h4 class="text-base font-bold text-white mb-1.5">Uso de Recursos Locales y Sin Desplazamiento</h4>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Aprovecha las aulas de cómputo locales y la vinculación de la <strong class="text-white">ESPOCH (incluyendo su presencia amazónica)</strong> para capacitar a docentes y niños sin obligar a las familias rurales a migrar a grandes ciudades por falta de educación inclusiva.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center mb-3">
+                            <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+                        </div>
+                        <h4 class="text-base font-bold text-white mb-1.5">Ahorro Económico Comunitario</h4>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Elimina el gasto de cientos de dólares por alumno en dispositivos importados, permitiendo que escuelas rurales amazónicas con presupuestos limitados implementen inclusión auditiva inmediata a costo casi nulo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Tarjeta 1: Impacto de la Propuesta -->
+                <div class="stage-card bg-gradient-to-b from-slate-50 to-white rounded-3xl p-7 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-navy-900 via-gold-500 to-navy-900"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-6 pt-1">
+                            <div class="w-12 h-12 rounded-2xl bg-navy-900 text-gold-400 flex items-center justify-center shadow-md">
+                                <i data-lucide="globe-2" class="w-6 h-6"></i>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-navy-900 text-white text-xs font-bold">Impacto Integral</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-3">
+                            Impacto Social, Académico y Tecnológico
+                        </h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                            Democratiza la comunicación inclusiva en escuelas de la Amazonía y Ecuador mediante software de código abierto sin sensores costosos, fortaleciendo la empatía infantil.
+                        </p>
+                    </div>
+                    <ul class="space-y-2.5 pt-4 border-t border-slate-200/80 text-xs font-semibold text-navy-800">
+                        <li class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-gold-600"></i>
+                            <span>Inclusión activa desde la niñez</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-gold-600"></i>
+                            <span>Transferencia tecnológica de bajo costo</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tarjeta 2: ODS 4 Educación de Calidad -->
+                <div class="stage-card bg-white rounded-3xl p-7 border-2 border-rose-500/25 shadow-sm hover:border-rose-500/60 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 inset-x-0 h-1.5 bg-rose-600"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-6 pt-1">
+                            <span class="px-3 py-1 rounded-lg bg-rose-600 text-white text-xs font-extrabold tracking-wider uppercase shadow-sm">
+                                ODS 4
+                            </span>
+                            <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                                <i data-lucide="book-open-check" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-3">
+                            Educación de Calidad
+                        </h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                            Garantiza entornos de aprendizaje inclusivos y equitativos para niños sordos y oyentes, brindando apoyo didáctico visual y sonoro en el aula sin intérpretes permanentes.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-600">
+                        <span>Meta 4.5 • Acceso igualitario</span>
+                        <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: ODS 9 Industria, Innovación e Infraestructura -->
+                <div class="stage-card bg-white rounded-3xl p-7 border-2 border-orange-500/25 shadow-sm hover:border-orange-500/60 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 inset-x-0 h-1.5 bg-orange-500"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-6 pt-1">
+                            <span class="px-3 py-1 rounded-lg bg-orange-600 text-white text-xs font-extrabold tracking-wider uppercase shadow-sm">
+                                ODS 9
+                            </span>
+                            <div class="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                                <i data-lucide="cpu" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-3">
+                            Industria, Innovación e Infraestructura
+                        </h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                            Impulsa innovación tecnológica nacional con IA y visión artificial ligera sobre la infraestructura escolar ya existente, reduciendo la brecha digital sin importar hardware costoso.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-orange-600">
+                        <span>Meta 9.c • Acceso universal TIC</span>
+                        <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 4: ODS 10 Reducción de las Desigualdades -->
+                <div class="stage-card bg-white rounded-3xl p-7 border-2 border-fuchsia-600/25 shadow-sm hover:border-fuchsia-600/60 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 inset-x-0 h-1.5 bg-fuchsia-600"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-6 pt-1">
+                            <span class="px-3 py-1 rounded-lg bg-fuchsia-600 text-white text-xs font-extrabold tracking-wider uppercase shadow-sm">
+                                ODS 10
+                            </span>
+                            <div class="w-11 h-11 rounded-xl bg-fuchsia-50 text-fuchsia-600 flex items-center justify-center">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-3">
+                            Reducción de las Desigualdades
+                        </h3>
+                        <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                            Promueve la inclusión social y comunicacional de niños y familias con discapacidad auditiva en la Amazonía y todo Ecuador, eliminando barreras económicas y lingüísticas.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-fuchsia-600">
+                        <span>Meta 10.2 • Inclusión universal</span>
+                        <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 5: VIABILIDAD TÉCNICA Y ECONÓMICA                              -->
+    <!-- ===================================================================== -->
+    <section id="viabilidad" class="py-20 bg-slate-50 border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    5. Viabilidad Técnica y Económica
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    Costos, Precios, Canales y Plan a Corto Plazo
+                </h2>
+                <p class="text-slate-600 mt-3 text-base">
+                    Modelo financiero austero y arquitectura técnica de código abierto diseñada para ejecutarse de forma inmediata con recursos locales.
+                </p>
+            </div>
+
+            <!-- Grid 4 Pilares de Viabilidad -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <!-- Costos -->
+                <div class="stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                            <i data-lucide="calculator" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-2">Estructura de Costos</h3>
+                        <ul class="space-y-2 text-xs sm:text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Licencias IA y Web:</strong> $0 (stack 100% Open-Source: Python, MediaPipe, TensorFlow).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Servidor / Hosting:</strong> ~$10 – $15 USD/mes (despliegue ligero o ejecución local offline).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Hardware por aula:</strong> $0 si hay PC con cámara (o webcam USB de ~$18 USD).</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-100 text-xs font-bold text-emerald-700">
+                        Costo marginal cercano a $0
+                    </div>
+                </div>
+
+                <!-- Precio -->
+                <div class="stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                            <i data-lucide="tag" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-2">Modelo de Precios</h3>
+                        <ul class="space-y-2 text-xs sm:text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <span class="text-gold-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Plan Social ($0):</strong> Acceso gratuito para escuelas públicas, rurales y comunidades de la Amazonía.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-gold-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Plan Aula ($15 USD/mes):</strong> Para colegios particulares y centros psicopedagógicos (hasta 40 niños).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-gold-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Licencia Anual ($140 USD):</strong> Incluye soporte, reportes de progreso y versión offline.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-100 text-xs font-bold text-gold-600">
+                        Modelo Freemium Autosostenible
+                    </div>
+                </div>
+
+                <!-- Canales de Venta y Distribución -->
+                <div class="stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-2">Canales de Venta y Entrega</h3>
+                        <ul class="space-y-2 text-xs sm:text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <span class="text-blue-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Convenios B2G:</strong> Distritos del MINEDUC y GADs provinciales/municipales amazónicos.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-blue-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Vinculación ESPOCH:</strong> Despliegue directo en escuelas mediante proyectos estudiantiles e Infocentros.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-blue-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Web Directa & ONGs:</strong> Descarga instalable offline y alianzas con fundaciones de discapacidad.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-100 text-xs font-bold text-blue-700">
+                        Distribución Web + Presencial
+                    </div>
+                </div>
+
+                <!-- Recursos Clave -->
+                <div class="stage-card bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center mb-4">
+                            <i data-lucide="boxes" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-2">Recursos Disponibles</h3>
+                        <ul class="space-y-2 text-xs sm:text-sm text-slate-600">
+                            <li class="flex items-start gap-2">
+                                <span class="text-purple-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Talento Humano:</strong> 4 estudiantes investigadores TI (ESPOCH) + tutoría académica.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-purple-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Infraestructura:</strong> Laboratorios de cómputo ESPOCH y dataset propio de 26 señas LSE.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-purple-600 font-bold">•</span>
+                                <span><strong class="text-navy-900">Aliados Piloto:</strong> Unidades educativas locales y asociaciones de personas sordas.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-100 text-xs font-bold text-purple-700">
+                        100% Operativo con Recursos Actuales
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hoja de Ruta Realizable a Corto Plazo (6 Meses) -->
+            <div class="bg-navy-900 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-800">
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-white">Hoja de Ruta Realizable a Corto Plazo (6 Meses)</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Implementación ágil desde el prototipo actual hasta aulas infantiles reales</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30 self-start sm:self-auto">
+                        Viabilidad Inmediata
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-800/70 rounded-2xl p-5 border border-slate-700/80">
+                        <div class="text-xs font-extrabold text-gold-400 uppercase tracking-wider mb-1">Meses 1 – 2 • Optimización</div>
+                        <h4 class="text-base font-bold text-white mb-2">Dataset Infantil y Modo Offline</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Calibración del modelo MediaPipe para manos pequeñas de niños de 6 a 12 años y empaquetado web sin requerimiento de internet permanente.
+                        </p>
+                    </div>
+                    <div class="bg-slate-800/70 rounded-2xl p-5 border border-slate-700/80">
+                        <div class="text-xs font-extrabold text-gold-400 uppercase tracking-wider mb-1">Meses 3 – 4 • Piloto en Aula</div>
+                        <h4 class="text-base font-bold text-white mb-2">Validación con Niños y Docentes</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Pruebas piloto en 2 escuelas de Chimborazo y 1 escuela amazónica (Orellana/Pastaza), midiendo aprendizaje del abecedario LSE e integración entre pares.
+                        </p>
+                    </div>
+                    <div class="bg-slate-800/70 rounded-2xl p-5 border border-slate-700/80">
+                        <div class="text-xs font-extrabold text-gold-400 uppercase tracking-wider mb-1">Meses 5 – 6 • Despliegue</div>
+                        <h4 class="text-base font-bold text-white mb-2">Alianzas y Escalamiento</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Entrega gratuita a escuelas públicas vía vinculación ESPOCH/GADs y activación del plan institucional para colegios particulares para sostener el proyecto.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 6: GUÍA DE ABECEDARIO EN LENGUA DE SEÑAS                      -->
+    <!-- ===================================================================== -->
+    <section id="guia-abecedario" class="py-20 bg-slate-50 border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    Recurso Interactivo LSE
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    Guía de Abecedario en Lengua de Señas
+                </h2>
+                <p class="text-slate-600 mt-3 text-base">
+                    Explora la dactilología oficial de la Lengua de Señas Ecuatoriana (LSE). Selecciona cualquier letra para visualizar la postura manual, sus instrucciones y escuchar su pronunciación.
+                </p>
+            </div>
+
+            <!-- Contenedor Principal de la Guía Interactiva -->
+            <div class="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/90 shadow-lg">
+                
+                <!-- Selector del Abecedario LSE (29 letras/dígrafos) -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                            Selecciona una letra del Abecedario LSE:
+                        </span>
+                        <span id="badge-tipo-sena" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                            Seña Estática
+                        </span>
+                    </div>
+                    <div id="alphabet-grid" class="grid grid-cols-5 sm:grid-cols-9 lg:grid-cols-[repeat(13,minmax(0,1fr))] gap-2">
+                        <!-- Generado dinámicamente por JS -->
+                    </div>
+                </div>
+
+                <!-- Panel Visor + Guía Rápida en 3 Pasos -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
+                    
+                    <!-- Visor Oscuro de la Seña Seleccionada (Izquierda - 7 cols) -->
+                    <div class="lg:col-span-7 bg-navy-900 rounded-2xl p-5 sm:p-8 text-white flex flex-col justify-between border border-slate-800 relative overflow-hidden">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-widest text-gold-400">
+                                    Dactilología LSE • Letra Actual
+                                </span>
+                                <div class="flex items-baseline gap-3 mt-1">
+                                    <h3 id="display-letter" class="text-4xl sm:text-6xl font-extrabold text-white font-display">A</h3>
+                                    <span id="display-phonetic" class="text-xs sm:text-sm text-slate-400 font-medium">/a/ • Configuración Manual</span>
+                                </div>
+                            </div>
+
+                            <!-- Botón de Síntesis de Voz -->
+                            <button id="btn-speak-letter" onclick="speakCurrentLetter()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-gold-500/20 transition-all active:scale-95 shrink-0">
+                                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                                <span>Escuchar Pronunciación</span>
+                            </button>
+                        </div>
+
+                        <!-- Ilustración SVG Dinámica de la Mano + Descripción -->
+                        <div class="my-6 grid grid-cols-1 sm:grid-cols-12 gap-6 items-center bg-slate-950/70 rounded-2xl p-5 border border-slate-800/90">
+                            <div class="sm:col-span-5 flex items-center justify-center">
+                                <div id="hand-svg-container" class="w-36 h-36 sm:w-40 sm:h-40 rounded-2xl bg-navy-900 border border-slate-700/80 flex items-center justify-center p-3 shadow-inner">
+                                    <!-- SVG dinámico de la postura de mano -->
+                                </div>
+                            </div>
+                            <div class="sm:col-span-7 space-y-3">
+                                <div class="inline-flex items-center gap-1.5 text-xs font-bold text-gold-400">
+                                    <i data-lucide="hand" class="w-4 h-4"></i>
+                                    <span>Cómo realizar esta seña:</span>
+                                </div>
+                                <p id="display-description" class="text-sm text-slate-200 leading-relaxed">
+                                    Cierra todos los dedos formando un puño suave con la palma hacia adelante y coloca el dedo pulgar apoyado al costado del dedo índice.
+                                </p>
+                                <div id="display-movement-tip" class="text-xs text-slate-400 bg-slate-900 px-3 py-2 rounded-lg border border-slate-800">
+                                    <strong>Movimiento:</strong> Postura fija sin desplazamiento.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Controles Anterior / Siguiente -->
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
+                            <button onclick="navigateLetter(-1)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition-colors">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                <span>Anterior</span>
+                            </button>
+                            <span id="letter-counter" class="text-slate-400 font-mono">1 de 26</span>
+                            <button onclick="navigateLetter(1)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition-colors">
+                                <span>Siguiente</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Guía Rápida en 3 Pasos (Derecha - 5 cols) -->
+                    <div class="lg:col-span-5 flex flex-col justify-between bg-slate-50 rounded-2xl p-6 border border-slate-200/80">
+                        <div>
+                            <div class="flex items-center gap-2 text-navy-900 font-extrabold text-base mb-5">
+                                <i data-lucide="compass" class="w-5 h-5 text-gold-600"></i>
+                                <h3>Cómo usar la Guía LSE en 3 Pasos</h3>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Paso 1 -->
+                                <div class="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+                                    <span class="w-7 h-7 rounded-lg bg-navy-900 text-gold-400 font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-navy-900">Selecciona una letra</h4>
+                                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                            Haz clic en cualquier botón del panel superior para explorar las 26 letras (A–Z) utilizadas en el modelo KineSign.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Paso 2 -->
+                                <div class="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+                                    <span class="w-7 h-7 rounded-lg bg-gold-500 text-navy-950 font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-navy-900">Observa la postura y movimiento</h4>
+                                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                            Verifica en el diagrama qué dedos deben extenderse o flexionarse y si la seña es estática o requiere trazo en el aire (como J o Z).
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Paso 3 -->
+                                <div class="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+                                    <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">3</span>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-navy-900">Practica y escucha su fonética</h4>
+                                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                            Replica la configuración frente a tu cámara y pulsa el botón dorado para escuchar la síntesis de voz asociada.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deletreador Rápido de Palabras -->
+                        <div class="mt-6 pt-5 border-t border-slate-200">
+                            <label for="spell-input" class="block text-xs font-bold text-navy-900 mb-2">
+                                Deletrear una palabra paso a paso:
+                            </label>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input id="spell-input" type="text" maxlength="12" placeholder="Ej: ESPOCH" class="w-full min-w-0 px-3.5 py-2.5 sm:py-2 text-sm rounded-xl border border-slate-300 focus:outline-none focus:border-gold-500 uppercase font-semibold text-navy-900">
+                                <button onclick="startSpellingDemo()" class="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-400 font-bold text-xs shrink-0 transition-colors">
+                                    Deletrear
+                                </button>
+                            </div>
+                            <p id="spell-status" class="text-[11px] text-slate-500 mt-1.5 min-h-[16px]"></p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 6: HERRAMIENTAS DE DESARROLLO                                 -->
+    <!-- ===================================================================== -->
+    <section id="herramientas" class="py-20 bg-white border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    Stack Tecnológico del Proyecto
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    Herramientas de Desarrollo
+                </h2>
+                <p class="text-slate-600 mt-3 text-base">
+                    Arquitectura de software abierta y optimizada para visión artificial, procesamiento geométrico de manos y aprendizaje profundo en tiempo real.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Herramienta 1: Python -->
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200/90 hover:border-gold-400 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center">
+                                <i data-lucide="terminal" class="w-5 h-5"></i>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded bg-navy-900 text-gold-400 text-[10px] font-extrabold uppercase tracking-wider">Lenguaje Core</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-1">Python</h3>
+                        <p class="text-xs font-semibold text-gold-600 mb-3">Procesamiento & Lógica IA</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Lenguaje principal utilizado para la orquestación del pipeline de datos, normalización de coordenadas y ejecución del motor de inferencia.
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-5 border-t border-slate-200/70 text-[11px] font-mono text-slate-500">
+                        Python 3.10+ • NumPy
+                    </div>
+                </div>
+
+                <!-- Herramienta 2: OpenCV -->
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200/90 hover:border-gold-400 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center">
+                                <i data-lucide="camera" class="w-5 h-5"></i>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-extrabold uppercase tracking-wider">Visión Artificial</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-1">OpenCV</h3>
+                        <p class="text-xs font-semibold text-gold-600 mb-3">Captura & Renderizado</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Captura de flujo de video en tiempo real desde webcam, conversión de espacios de color (BGR a RGB) y superposición visual de esqueletos.
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-5 border-t border-slate-200/70 text-[11px] font-mono text-slate-500">
+                        OpenCV-Python • Real-Time Video
+                    </div>
+                </div>
+
+                <!-- Herramienta 3: MediaPipe -->
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200/90 hover:border-gold-400 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center">
+                                <i data-lucide="hand-metal" class="w-5 h-5"></i>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider">Landmarks 3D</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-1">MediaPipe</h3>
+                        <p class="text-xs font-semibold text-gold-600 mb-3">Detección de 21 Puntos</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Extracción precisa de 21 articulaciones tridimensionales (X, Y, Z) de la mano con mínima latencia en CPU estándar sin GPU dedicada.
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-5 border-t border-slate-200/70 text-[11px] font-mono text-slate-500">
+                        MediaPipe Hands • Google AI
+                    </div>
+                </div>
+
+                <!-- Herramienta 4: TensorFlow / PyTorch -->
+                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200/90 hover:border-gold-400 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-navy-900 text-gold-400 flex items-center justify-center">
+                                <i data-lucide="brain-circuit" class="w-5 h-5"></i>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">Deep Learning</span>
+                        </div>
+                        <h3 class="text-lg font-extrabold text-navy-900 mb-1">TensorFlow / PyTorch</h3>
+                        <p class="text-xs font-semibold text-gold-600 mb-3">Clasificación Neuronal</p>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Entrenamiento de redes neuronales densas y secuenciales (LSTM) para clasificar patrones gestuales estáticos y dinámicos de la LSE.
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-5 border-t border-slate-200/70 text-[11px] font-mono text-slate-500">
+                        Keras • Redes LSTM / MLP
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- SECCIÓN 7: AUTORES DEL PROYECTO - EQUIPO DE DESARROLLO ESPOCH         -->
+    <!-- ===================================================================== -->
+    <section id="equipo" class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="inline-block px-3.5 py-1 rounded-full bg-gold-500/15 text-gold-600 text-xs font-extrabold tracking-wider uppercase mb-3">
+                    Autores del Proyecto
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+                    Autores del Proyecto
+                </h2>
+                <p class="text-lg font-bold text-gold-600 mt-1">
+                    Equipo de Desarrollo ESPOCH
+                </p>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Estudiantes e investigadores de la Carrera de Tecnologías de la Información de la Escuela Superior Politécnica de Chimborazo.
+                </p>
+            </div>
+
+            <!-- Grid de 4 Integrantes del Equipo -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                
+                <!-- Autor 1 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm text-center hover:-translate-y-1 transition-transform">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-navy-900 to-slate-700 p-1 mb-4 shadow-md">
+                        <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-navy-900">
+                            <i data-lucide="user-check" class="w-9 h-9 text-navy-900"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-base font-extrabold text-navy-900">Investigador Principal</h3>
+                    <p class="text-xs font-bold text-gold-600 mt-0.5">Arquitectura IA & Modelos LSE</p>
+                    <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                        Diseño y entrenamiento de redes neuronales para clasificación de gestos estáticos y dinámicos.
+                    </p>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <span class="inline-block px-3 py-1 rounded-md bg-navy-900 text-gold-400 text-[10px] font-extrabold tracking-wider uppercase">
+                            ESPOCH • TI
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Autor 2 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm text-center hover:-translate-y-1 transition-transform">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-navy-900 to-slate-700 p-1 mb-4 shadow-md">
+                        <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-navy-900">
+                            <i data-lucide="scan" class="w-9 h-9 text-navy-900"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-base font-extrabold text-navy-900">Desarrollador Visión Artificial</h3>
+                    <p class="text-xs font-bold text-gold-600 mt-0.5">Procesamiento MediaPipe & OpenCV</p>
+                    <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                        Extracción de landmarks manuales en tiempo real y optimización de baja latencia en cámara.
+                    </p>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <span class="inline-block px-3 py-1 rounded-md bg-navy-900 text-gold-400 text-[10px] font-extrabold tracking-wider uppercase">
+                            ESPOCH • TI
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Autor 3 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm text-center hover:-translate-y-1 transition-transform">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-navy-900 to-slate-700 p-1 mb-4 shadow-md">
+                        <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-navy-900">
+                            <i data-lucide="layout-template" class="w-9 h-9 text-navy-900"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-base font-extrabold text-navy-900">Diseño UX/UI & Frontend</h3>
+                    <p class="text-xs font-bold text-gold-600 mt-0.5">Interfaz Web & Síntesis de Voz</p>
+                    <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                        Desarrollo de la plataforma interactiva, guía visual del abecedario LSE y salida de audio TTS.
+                    </p>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <span class="inline-block px-3 py-1 rounded-md bg-navy-900 text-gold-400 text-[10px] font-extrabold tracking-wider uppercase">
+                            ESPOCH • TI
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Autor 4 -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm text-center hover:-translate-y-1 transition-transform">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-navy-900 to-slate-700 p-1 mb-4 shadow-md">
+                        <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-navy-900">
+                            <i data-lucide="file-check-2" class="w-9 h-9 text-navy-900"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-base font-extrabold text-navy-900">Validación & Dataset LSE</h3>
+                    <p class="text-xs font-bold text-gold-600 mt-0.5">Documentación & Pruebas de Campo</p>
+                    <p class="text-xs text-slate-500 mt-3 leading-relaxed">
+                        Recolección de muestras dactilológicas de la LSE, validación métrica y documentación científica.
+                    </p>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <span class="inline-block px-3 py-1 rounded-md bg-navy-900 text-gold-400 text-[10px] font-extrabold tracking-wider uppercase">
+                            ESPOCH • TI
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Banner Institucional Oscuro ESPOCH -->
+            <div class="bg-navy-900 rounded-2xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4 text-center md:text-left flex-col sm:flex-row">
+                    <div class="w-14 h-14 rounded-2xl bg-gold-500/15 border border-gold-500/30 text-gold-400 flex items-center justify-center shrink-0">
+                        <i data-lucide="shield-check" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-extrabold text-white">
+                            Equipo de Desarrollo ESPOCH — Carrera de Tecnologías de la Información
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                            Facultad de Informática y Electrónica (FIE) • Escuela Superior Politécnica de Chimborazo, Riobamba - Ecuador.
+                        </p>
+                    </div>
+                </div>
+                <a href="#guia-abecedario" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold text-xs uppercase tracking-wider shrink-0 transition-colors">
+                    <span>Explorar Proyecto</span>
+                    <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- PIE DE PÁGINA (FOOTER)                                                -->
+    <!-- ===================================================================== -->
+    <footer class="bg-navy-950 text-slate-400 border-t border-slate-800/90 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+            <div class="inline-flex items-center justify-center gap-2 text-white font-display font-extrabold text-base">
+                <span class="w-2.5 h-2.5 rounded-full bg-gold-500"></span>
+                <span>KineSign <span class="text-gold-400">ESPOCH</span></span>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-400">
+                <a href="#problema-objetivos" class="hover:text-gold-400 transition-colors">Problema y Propuesta</a>
+                <span>•</span>
+                <a href="#planteamiento" class="hover:text-gold-400 transition-colors">Planteamiento</a>
+                <span>•</span>
+                <a href="#innovacion" class="hover:text-gold-400 transition-colors">Innovación</a>
+                <span>•</span>
+                <a href="#impacto-ods" class="hover:text-gold-400 transition-colors">Sostenibilidad Amazónica</a>
+                <span>•</span>
+                <a href="#viabilidad" class="hover:text-gold-400 transition-colors">Viabilidad</a>
+                <span>•</span>
+                <a href="#guia-abecedario" class="hover:text-gold-400 transition-colors">Guía LSE</a>
+                <span>•</span>
+                <a href="#herramientas" class="hover:text-gold-400 transition-colors">Herramientas</a>
+                <span>•</span>
+                <a href="#equipo" class="hover:text-gold-400 transition-colors">Autores ESPOCH</a>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800/80">
+                <p class="text-xs sm:text-sm text-slate-300 font-medium">
+                    © 2026 KineSign ESPOCH • Carrera de Tecnologías de la Información. Proyecto de Investigación y Desarrollo Tecnológico.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================================================================== -->
+    <!-- JAVASCRIPT INTERACTIVO (GUÍA ABECEDARIO LSE, VOZ Y SIMULACIÓN)        -->
+    <!-- ===================================================================== -->
+    <script>
+        // Inicializar iconos Lucide
+        lucide.createIcons();
+
+        // Menú móvil toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Función de Síntesis de Voz (Web Speech API)
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-EC';
+                utterance.rate = 0.95;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Simulador rápido en el Hero
+        function simulateHeroDetection(word, confidence) {
+            const wordEl = document.getElementById('hero-detected-word');
+            const confEl = document.getElementById('hero-confidence');
+            wordEl.textContent = `“${word}”`;
+            confEl.textContent = confidence;
+            speakText(word);
+        }
+
+        // Base de datos del Abecedario LSE (26 letras A-Z utilizadas en el modelo)
+        // Cada entrada especifica qué dedos están levantados [pulgar, indice, medio, anular, menique], tipo y descripción
+        const lseAlphabet = [
+            { letter: 'A', phonetic: 'Letra A', type: 'Estática', fingers: [1,0,0,0,0], thumbSide: true, desc: 'Cierra todos los dedos formando un puño suave con la palma al frente y coloca el pulgar extendido pegado al costado del índice.', tip: 'Postura fija con la palma orientada hacia el interlocutor.' },
+            { letter: 'B', phonetic: 'Letra B', type: 'Estática', fingers: [0,1,1,1,1], desc: 'Extiende juntos y rectos los cuatro dedos (índice, medio, anular y meñique) hacia arriba, mientras el pulgar se dobla sobre la palma.', tip: 'Dedos juntos y palma hacia adelante.' },
+            { letter: 'C', phonetic: 'Letra C', type: 'Estática', fingers: [1,1,1,1,1], curve: true, desc: 'Curva todos los dedos y el pulgar formando la silueta clara de la letra C vista de perfil.', tip: 'Mantén una abertura semicircular entre pulgar e índice.' },
+            { letter: 'D', phonetic: 'Letra D', type: 'Estática', fingers: [0,1,0,0,0], dCircle: true, desc: 'Levanta el dedo índice completamente recto hacia arriba mientras los dedos medio, anular y meñique tocan la punta del pulgar formando un círculo.', tip: 'Índice vertical y círculo inferior cerrado.' },
+            { letter: 'E', phonetic: 'Letra E', type: 'Estática', fingers: [0,0,0,0,0], claw: true, desc: 'Flexiona las falanges superiores de los cuatro dedos hacia abajo sin llegar a cerrar el puño completo y recoge el pulgar debajo.', tip: 'Postura en garra suave hacia el frente.' },
+            { letter: 'F', phonetic: 'Letra F', type: 'Estática', fingers: [0,0,1,1,1], fCircle: true, desc: 'Une las yemas del pulgar y el índice formando un círculo, manteniendo los dedos medio, anular y meñique extendidos hacia arriba.', tip: 'Tres dedos superiores separados y rectos.' },
+            { letter: 'G', phonetic: 'Letra G', type: 'Estática', fingers: [1,1,0,0,0], horizontal: true, desc: 'Extiende el dedo índice y el pulgar en paralelo apuntando hacia un costado, manteniendo los demás dedos cerrados.', tip: 'Orientación lateral de la mano.' },
+            { letter: 'H', phonetic: 'Letra H', type: 'Estática', fingers: [0,1,1,0,0], horizontal: true, desc: 'Extiende juntos los dedos índice y medio en posición horizontal hacia un lado, con el pulgar sujetando los dedos anular y meñique.', tip: 'Dos dedos extendidos horizontalmente.' },
+            { letter: 'I', phonetic: 'Letra I', type: 'Estática', fingers: [0,0,0,0,1], desc: 'Cierra el puño con la palma hacia adelante y levanta únicamente el dedo meñique completamente recto.', tip: 'Meñique vertical; resto de dedos cerrados.' },
+            { letter: 'J', phonetic: 'Letra J', type: 'Dinámica', fingers: [0,0,0,0,1], motion: 'j', desc: 'Parte de la posición de la letra I (meñique levantado) y dibuja en el aire la curva descendente y gancho de la letra J.', tip: 'Seña dinámica: requiere trazo curvo hacia abajo.' },
+            { letter: 'K', phonetic: 'Letra K', type: 'Estática', fingers: [1,1,1,0,0], spread: true, thumbMid: true, desc: 'Levanta el índice y el medio en forma de V y coloca la yema del pulgar apoyada entre la base de ambos dedos.', tip: 'Palma hacia adelante con pulgar intermedio.' },
+            { letter: 'L', phonetic: 'Letra L', type: 'Estática', fingers: [1,1,0,0,0], desc: 'Extiende el dedo índice verticalmente hacia arriba y el pulgar horizontalmente hacia un lado formando un ángulo recto de 90°.', tip: 'Silueta clara de L con índice y pulgar.' },
+            { letter: 'M', phonetic: 'Letra M', type: 'Estática', fingers: [0,1,1,1,0], down: true, desc: 'Orienta los dedos índice, medio y anular apuntando hacia abajo mientras el pulgar sujeta el meñique doblado.', tip: 'Tres dedos verticales apuntando hacia abajo.' },
+            { letter: 'N', phonetic: 'Letra N', type: 'Estática', fingers: [0,1,1,0,0], down: true, desc: 'Orienta únicamente los dedos índice y medio apuntando hacia abajo, manteniendo anular, meñique y pulgar recogidos.', tip: 'Dos dedos verticales apuntando hacia abajo.' },
+            { letter: 'O', phonetic: 'Letra O', type: 'Estática', fingers: [1,1,1,1,1], circle: true, desc: 'Une las puntas de todos los dedos con la punta del pulgar formando un óvalo o círculo cerrado.', tip: 'Postura redondeada visible de frente.' },
+            { letter: 'P', phonetic: 'Letra P', type: 'Estática', fingers: [1,1,1,0,0], down: true, spread: true, thumbMid: true, desc: 'Similar a la configuración de la K, pero inclinando la muñeca para que los dedos apunten hacia abajo.', tip: 'Índice hacia adelante/abajo y pulgar en el medio.' },
+            { letter: 'Q', phonetic: 'Letra Q', type: 'Estática', fingers: [1,1,0,0,0], down: true, pinch: true, desc: 'Con la mano orientada hacia abajo, coloca el índice y el pulgar formando una pinza semicircular.', tip: 'Pinza orientada hacia abajo.' },
+            { letter: 'R', phonetic: 'Letra R', type: 'Estática', fingers: [0,1,1,0,0], crossed: true, desc: 'Levanta los dedos índice y medio cruzando el dedo medio por detrás del índice, mientras los demás dedos permanecen cerrados.', tip: 'Dedos índice y medio entrecruzados.' },
+            { letter: 'S', phonetic: 'Letra S', type: 'Estática', fingers: [0,0,0,0,0], thumbAcross: true, desc: 'Cierra todos los dedos en un puño firme y cruza el dedo pulgar horizontalmente por delante de los dedos doblados.', tip: 'Puño cerrado con pulgar frontal.' },
+            { letter: 'T', phonetic: 'Letra T', type: 'Estática', fingers: [0,0,0,0,0], thumbBetween: true, desc: 'Cierra el puño y coloca el pulgar asomando entre el dedo índice y el dedo medio doblados.', tip: 'Pulgar visible entre índice y medio.' },
+            { letter: 'U', phonetic: 'Letra U', type: 'Estática', fingers: [0,1,1,0,0], desc: 'Levanta los dedos índice y medio completamente juntos y rectos hacia arriba; el pulgar sujeta el anular y meñique.', tip: 'Índice y medio unidos sin separación.' },
+            { letter: 'V', phonetic: 'Letra V', type: 'Estática', fingers: [0,1,1,0,0], spread: true, desc: 'Levanta los dedos índice y medio separados formando una V clara, manteniendo los demás dedos cerrados.', tip: 'Separación clara entre índice y medio.' },
+            { letter: 'W', phonetic: 'Letra W', type: 'Estática', fingers: [0,1,1,1,0], spread: true, desc: 'Extiende y separa los dedos índice, medio y anular hacia arriba, uniendo el pulgar con el meñique.', tip: 'Tres dedos centrales abiertos.' },
+            { letter: 'X', phonetic: 'Letra X', type: 'Estática', fingers: [0,1,0,0,0], hook: true, desc: 'Cierra el puño y levanta el dedo índice doblando sus falanges en forma de gancho.', tip: 'Índice flexionado en gancho.' },
+            { letter: 'Y', phonetic: 'Letra Y', type: 'Estática', fingers: [1,0,0,0,1], spreadY: true, desc: 'Extiende el dedo pulgar y el dedo meñique hacia los extremos, manteniendo doblados índice, medio y anular.', tip: 'Pulgar y meñique extendidos.' },
+            { letter: 'Z', phonetic: 'Letra Z', type: 'Dinámica', fingers: [0,1,0,0,0], motion: 'z', desc: 'Con el dedo índice extendido hacia el frente, traza en el aire el recorrido en zigzag de la letra Z.', tip: 'Seña dinámica: trazo en zigzag con el índice.' }
+        ];
+
+        let currentIndex = 0;
+
+        // Genera un SVG anatómico y claro de la mano según cada seña del abecedario LSE
+        function generateHandSVG(item) {
+            const [thumb, index, middle, ring, pinky] = item.fingers;
+            const active = '#fbbf24';
+            const inactive = '#334155';
+            const stroke = '#0f172a';
+            const palm = '#1e293b';
+
+            let motionIndicator = '';
+            if (item.motion === 'j') {
+                motionIndicator = `<path d="M98 36 L98 92 Q98 114 76 112" stroke="#38bdf8" stroke-width="3" stroke-dasharray="4 3" fill="none"/>
+                                   <polygon points="78,107 69,112 78,117" fill="#38bdf8"/>`;
+            } else if (item.motion === 'z') {
+                motionIndicator = `<path d="M32 22 L106 22 L38 56 L106 56" stroke="#38bdf8" stroke-width="3" stroke-dasharray="4 3" fill="none"/>
+                                   <polygon points="104,51 114,56 104,61" fill="#38bdf8"/>`;
+            }
+
+            // Formas especiales de perfil / círculo (C, O)
+            if (item.curve) {
+                return `
+                <svg viewBox="0 0 140 140" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M96 34 C74 18, 42 26, 36 58 C30 92, 54 114, 92 104" fill="none" stroke="${active}" stroke-width="15" stroke-linecap="round"/>
+                    <path d="M96 34 C74 18, 42 26, 36 58 C30 92, 54 114, 92 104" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+                    <rect x="44" y="106" width="38" height="18" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                </svg>`;
+            }
+
+            if (item.circle) {
+                return `
+                <svg viewBox="0 0 140 140" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="70" cy="64" rx="28" ry="34" fill="none" stroke="${active}" stroke-width="14"/>
+                    <ellipse cx="70" cy="64" rx="28" ry="34" fill="none" stroke="${stroke}" stroke-width="1.5" opacity="0.4"/>
+                    <rect x="52" y="102" width="36" height="20" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                </svg>`;
+            }
+
+            const transformAttr = item.down ? 'transform="rotate(180 70 72)"' : (item.horizontal ? 'transform="rotate(-90 70 72)"' : '');
+
+            // Rotaciones por separación (V, W, K, Y, R)
+            let idxRot = '';
+            let midRot = '';
+            let ringRot = '';
+            let pinkyRot = '';
+
+            if (item.spread && index && middle && !ring) {
+                idxRot = 'transform="rotate(-11 50 66)"';
+                midRot = 'transform="rotate(11 64 66)"';
+            } else if (item.spread && index && middle && ring) {
+                idxRot = 'transform="rotate(-13 50 66)"';
+                ringRot = 'transform="rotate(13 78 66)"';
+            } else if (item.crossed) {
+                idxRot = 'transform="rotate(9 50 66)"';
+                midRot = 'transform="rotate(-11 64 66)"';
+            } else if (item.spreadY) {
+                pinkyRot = 'transform="rotate(20 91 68)"';
+            }
+
+            // Dedo índice (normal o gancho X)
+            const indexShape = item.hook
+                ? `<path d="M50 68 L50 34 Q50 22 64 26 L68 34" fill="none" stroke="${active}" stroke-width="11" stroke-linecap="round"/>`
+                : `<rect x="44" y="${index ? '18' : '48'}" width="12" height="${index ? '50' : '22'}" rx="6" ${idxRot} fill="${index ? active : inactive}" stroke="${stroke}" stroke-width="1.5"/>`;
+
+            // Pulgar según postura específica
+            let thumbShape = '';
+            if (item.thumbSide) {
+                // Letra A: pulgar recto pegado al costado izquierdo del puño
+                thumbShape = `<rect x="30" y="42" width="12" height="36" rx="6" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>`;
+            } else if (item.thumbAcross) {
+                // Letra S: pulgar cruzado horizontalmente por delante del puño
+                thumbShape = `<rect x="44" y="64" width="40" height="13" rx="6.5" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>`;
+            } else if (item.thumbBetween) {
+                // Letra T: pulgar asomando entre índice y medio
+                thumbShape = `<rect x="52" y="48" width="13" height="24" rx="6.5" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>`;
+            } else if (item.thumbMid) {
+                // Letra K / P: pulgar apoyado entre índice y medio
+                thumbShape = `<rect x="48" y="54" width="24" height="12" rx="6" transform="rotate(-25 60 60)" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>`;
+            } else if (item.dCircle || item.fCircle || item.pinch) {
+                // Círculo/pinza frontal
+                thumbShape = `<circle cx="${item.fCircle ? '46' : '64'}" cy="${item.fCircle ? '58' : '74'}" r="10" fill="none" stroke="${active}" stroke-width="4.5"/>`;
+            } else if (thumb) {
+                // Pulgar extendido hacia afuera (L, G, Y)
+                thumbShape = `<rect x="18" y="66" width="28" height="13" rx="6.5" transform="rotate(-22 32 72)" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>`;
+            } else {
+                // Pulgar recogido
+                thumbShape = `<rect x="40" y="76" width="24" height="12" rx="6" transform="rotate(8 52 82)" fill="${inactive}" stroke="${stroke}" stroke-width="1.5"/>`;
+            }
+
+            // Garra suave para la letra E
+            const clawOverlay = item.claw
+                ? `<rect x="45" y="44" width="11" height="18" rx="5.5" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>
+                   <rect x="58" y="42" width="11" height="20" rx="5.5" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>
+                   <rect x="71" y="44" width="11" height="18" rx="5.5" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>
+                   <rect x="84" y="47" width="10" height="16" rx="5" fill="${active}" stroke="${stroke}" stroke-width="1.5"/>`
+                : '';
+
+            return `
+            <svg viewBox="0 0 140 140" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <g ${transformAttr}>
+                    <!-- Palma base -->
+                    <rect x="42" y="64" width="56" height="44" rx="16" fill="${palm}" stroke="#f59e0b" stroke-width="2"/>
+                    
+                    <!-- Índice -->
+                    ${indexShape}
+                    
+                    <!-- Medio -->
+                    <rect x="58" y="${middle ? '14' : '46'}" width="12" height="${middle ? '54' : '24'}" rx="6" ${midRot}
+                          fill="${middle ? active : inactive}" stroke="${stroke}" stroke-width="1.5"/>
+                    
+                    <!-- Anular -->
+                    <rect x="72" y="${ring ? '20' : '48'}" width="12" height="${ring ? '48' : '22'}" rx="6" ${ringRot}
+                          fill="${ring ? active : inactive}" stroke="${stroke}" stroke-width="1.5"/>
+                    
+                    <!-- Meñique -->
+                    <rect x="86" y="${pinky ? '28' : '52'}" width="11" height="${pinky ? '40' : '20'}" rx="5.5" ${pinkyRot}
+                          fill="${pinky ? active : inactive}" stroke="${stroke}" stroke-width="1.5"/>
+
+                    ${clawOverlay}
+                    <!-- Pulgar (capa frontal para S, T, A, K) -->
+                    ${thumbShape}
+
+                    <!-- Muñeca -->
+                    <rect x="52" y="104" width="36" height="18" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                </g>
+                ${motionIndicator}
+            </svg>`;
+        }
+
+        // Renderizar cuadrícula de letras
+        function renderAlphabetGrid() {
+            const grid = document.getElementById('alphabet-grid');
+            grid.innerHTML = '';
+
+            lseAlphabet.forEach((item, index) => {
+                const btn = document.createElement('button');
+                const isActive = index === currentIndex;
+                btn.textContent = item.letter;
+                btn.className = isActive
+                    ? 'py-2.5 rounded-xl bg-navy-900 text-gold-400 font-extrabold text-sm shadow-md ring-2 ring-gold-500 transition-all scale-105'
+                    : 'py-2.5 rounded-xl bg-slate-100 hover:bg-gold-500/20 text-navy-900 font-bold text-sm border border-slate-200 transition-all';
+                btn.onclick = () => selectLetter(index, true);
+                grid.appendChild(btn);
+            });
+        }
+
+        // Seleccionar una letra y actualizar el visor
+        function selectLetter(index, shouldSpeak = false) {
+            currentIndex = index;
+            const item = lseAlphabet[currentIndex];
+
+            document.getElementById('display-letter').textContent = item.letter;
+            document.getElementById('display-phonetic').textContent = `${item.phonetic} • Dactilología LSE`;
+            document.getElementById('display-description').textContent = item.desc;
+            document.getElementById('display-movement-tip').innerHTML = `<strong>Detalle técnico:</strong> ${item.tip}`;
+            document.getElementById('letter-counter').textContent = `${currentIndex + 1} de ${lseAlphabet.length}`;
+            document.getElementById('hand-svg-container').innerHTML = generateHandSVG(item);
+
+            const badge = document.getElementById('badge-tipo-sena');
+            badge.textContent = `Seña ${item.type}`;
+            badge.className = item.type === 'Dinámica'
+                ? 'text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-800'
+                : 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800';
+
+            renderAlphabetGrid();
+
+            if (shouldSpeak) {
+                speakCurrentLetter();
+            }
+        }
+
+        function navigateLetter(step) {
+            let next = currentIndex + step;
+            if (next < 0) next = lseAlphabet.length - 1;
+            if (next >= lseAlphabet.length) next = 0;
+            selectLetter(next, true);
+        }
+
+        function speakCurrentLetter() {
+            const item = lseAlphabet[currentIndex];
+            speakText(item.phonetic);
+        }
+
+        // Deletreador automático de palabras
+        let spellTimer = null;
+        function startSpellingDemo() {
+            const input = document.getElementById('spell-input');
+            const status = document.getElementById('spell-status');
+            const rawWord = input.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+
+            if (!rawWord) {
+                status.textContent = 'Escribe una palabra válida (ej. ESPOCH, HOLA).';
+                return;
+            }
+
+            if (spellTimer) clearInterval(spellTimer);
+
+            const chars = rawWord.split('');
+            let step = 0;
+            status.textContent = `Deletreando "${rawWord}"...`;
+
+            const showStep = () => {
+                if (step >= chars.length) {
+                    clearInterval(spellTimer);
+                    status.textContent = `Deletreo completado: "${rawWord}"`;
+                    speakText(rawWord);
+                    return;
+                }
+                const ch = chars[step];
+                const foundIdx = lseAlphabet.findIndex(entry => entry.letter === ch);
+                if (foundIdx !== -1) {
+                    selectLetter(foundIdx, false);
+                    status.textContent = `Deletreando "${rawWord}": letra ${ch} (${step + 1}/${chars.length})`;
+                }
+                step++;
+            };
+
+            showStep();
+            spellTimer = setInterval(showStep, 1100);
+        }
+
+        // Inicializar en la letra A al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            selectLetter(0, false);
+        });
+    </script>
+</body>
+</html>
